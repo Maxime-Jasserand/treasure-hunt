@@ -4,12 +4,14 @@ import model.enums.Direction;
 import model.enums.Orientation;
 
 public class Adventurer extends Tile {
+    private String name;
     private Orientation orientation;
+    private String moveList;
     private int treasureCount;
 
-    public Adventurer(int x, int y, Orientation orientation) {
+    public Adventurer(String name, int x, int y, String orientation, String moveList) {
         super(x, y);
-        this.orientation = orientation;
+        this.orientation = Orientation.valueOf(orientation);
         this.treasureCount = 0;
     }
 
