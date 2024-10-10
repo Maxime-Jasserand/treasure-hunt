@@ -6,6 +6,6 @@ public class InvalidLineException extends Exception{
     }
 
     public InvalidLineException(String line){
-        super("Format invalide à la ligne :" + line);
+        super(line);
     }
 }

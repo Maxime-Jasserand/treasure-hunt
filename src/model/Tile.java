@@ -1,6 +1,6 @@
 package model;
 
-public class Tile {
+public abstract class Tile {
     protected int x;
     protected int y;
 
@@ -16,4 +16,6 @@ public class Tile {
     public boolean isCrossable(){
         return true;
     }
+
+    public abstract String getOutputLine();
 }

@@ -1,7 +1,7 @@
 package exceptions;
 
 public class TileUnavailableException extends Exception{
-    public TileUnavailableException(){
-        super("Tile unavailable");
+    public TileUnavailableException(String message){
+        super(message);
     }
 }

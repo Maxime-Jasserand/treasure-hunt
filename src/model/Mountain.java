@@ -9,4 +9,9 @@ public class Mountain extends Tile{
     public boolean isCrossable(){
         return false;
     }
+
+    @Override
+    public String getOutputLine(){
+        return "M - " + x + " - " + y;
+    }
 }

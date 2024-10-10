@@ -1,61 +1,115 @@
 package model;
 
-import model.enums.Direction;
 import model.enums.Orientation;
 
+import java.util.Optional;
+
 public class Adventurer extends Tile {
-    private String name;
+    private final String name;
     private Orientation orientation;
     private String moveList;
     private int treasureCount;
 
     public Adventurer(String name, int x, int y, String orientation, String moveList) {
         super(x, y);
+        this.name = name;
         this.orientation = Orientation.valueOf(orientation);
+        this.moveList = moveList;
         this.treasureCount = 0;
     }
 
-    public void pickupTreasure(int quantity) {
-        treasureCount += quantity;
+    /*-------------------------   MOVEMENT METHODS  -------------------------*/
+
+    /**
+     * A move will either be :
+     * - Turn, which is simple
+     * - Move forward which require to check if it's possible before moving and eventually picking up a treasure
+     *
+     * @param map is used to check where the adventurer will land
+     */
+    public void executeNextMove(Map map) {
+        char nextMove = moveList.charAt(0);
+        switch (nextMove) {
+            case 'A' -> {
+                // we check the next tile before moving
+                if (isNextTileCrossable(map)) {
+                    moveForward();
+                    pickupTreasureIfAny(map);
+                }
+            }
+            case 'G' -> turnLeft();
+            case 'D' -> turnRight();
+        }
+
+        //Remove the move that has been executed from the list
+        moveList = moveList.substring(1);
+    }
+
+    public void pickupTreasureIfAny(Map map) {
+        //Get an eventual treasure on the tile
+        Optional<Treasure> treasure = map.getTreasure(x, y);
+        if (treasure.isEmpty()) {
+            return;
+        }
+        //Pick it up if any
+        map.pickupTreasure(treasure.get());
+        //Increase adventurer treasure count
+        treasureCount++;
+    }
+
+    //The next tile is crossable if it's empty or crossable
+    public boolean isNextTileCrossable(Map map) {
+        int nextX = x;
+        int nextY = y;
+        switch (orientation) {
+            case N -> nextY--;
+            case E -> nextX++;
+            case S -> nextY++;
+            case W -> nextX--;
+        }
+        Optional<Tile> nextTile = map.getTile(nextX, nextY);
+        return nextTile.isEmpty() || nextTile.get().isCrossable();
     }
 
     public void moveForward() {
         switch (orientation) {
-            case NORTH -> y--;
-            case EAST -> x++;
-            case SOUTH -> y++;
-            case WEST -> x--;
-        }
-    }
-
-    public void turn(Direction direction) {
-        switch (direction) {
-            case LEFT -> turnLeft();
-            case RIGHT -> turnRight();
+            case N -> y--;
+            case E -> x++;
+            case S -> y++;
+            case W -> x--;
         }
     }
 
     private void turnLeft() {
         switch (orientation) {
-            case NORTH -> orientation = Orientation.WEST;
-            case EAST -> orientation = Orientation.NORTH;
-            case SOUTH -> orientation = Orientation.EAST;
-            case WEST -> orientation = Orientation.SOUTH;
+            case N -> orientation = Orientation.W;
+            case E -> orientation = Orientation.N;
+            case S -> orientation = Orientation.E;
+            case W -> orientation = Orientation.S;
         }
     }
 
     private void turnRight() {
         switch (orientation) {
-            case NORTH -> orientation = Orientation.EAST;
-            case EAST -> orientation = Orientation.SOUTH;
-            case SOUTH -> orientation = Orientation.WEST;
-            case WEST -> orientation = Orientation.NORTH;
+            case N -> orientation = Orientation.E;
+            case E -> orientation = Orientation.S;
+            case S -> orientation = Orientation.W;
+            case W -> orientation = Orientation.N;
         }
     }
 
-
+    /*-------------------------   UTILS  -------------------------*/
     @Override
     public boolean isCrossable() {
         return false;
+    }
+
+    @Override
+    public String getOutputLine() {
+        return "A - " + name + " - " + x + " - " + y + " - " + orientation.toString() + " - " + treasureCount;
+    }
+
+    public String getMoveList() {
+        return moveList;
     }
 }
