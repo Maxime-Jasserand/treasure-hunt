@@ -17,8 +17,8 @@ import java.io.File;
  * - a button to launch the process
  */
 public class TreasureHuntGUI extends JFrame {
-    private final JTextField inputTextField;
-    private final JTextField outputTextField;
+    protected JTextField inputTextField;
+    protected JTextField outputTextField;
 
     public TreasureHuntGUI(ActionListener launchAdventureEvent) {
         //JFrame initialization
@@ -67,6 +67,7 @@ public class TreasureHuntGUI extends JFrame {
     }
 
     /*-------------------------   PATH EXTRACTION METHODS   -------------------------*/
+
     /**
      * Get input path from inputTextField
      *
@@ -108,6 +109,7 @@ public class TreasureHuntGUI extends JFrame {
     }
 
     /*-------------------------   UTILS   -------------------------*/
+
     /**
      * Build a file chooser JPanel from
      *

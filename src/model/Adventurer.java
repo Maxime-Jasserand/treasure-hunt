@@ -112,4 +112,16 @@ public class Adventurer extends Tile {
     public String getMoveList() {
         return moveList;
     }
+
+    public String getName(){
+        return name;
+    }
+
+    public Orientation getOrientation(){
+        return orientation;
+    }
+
+    public int getTreasureCount(){
+        return treasureCount;
+    }
 }

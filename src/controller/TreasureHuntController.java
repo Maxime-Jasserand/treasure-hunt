@@ -1,6 +1,5 @@
 package controller;
 
-import exceptions.EmptyInputException;
 import exceptions.InvalidFileFormatException;
 import exceptions.InvalidLineException;
 import exceptions.TileUnavailableException;
@@ -19,7 +18,7 @@ import java.util.*;
  */
 public class TreasureHuntController {
     private final TreasureHuntGUI gui;
-    private Map map;
+    protected Map map;
 
     /**
      * On creation, display the view and pass it launchAdventure as an ActionListener
@@ -40,50 +39,46 @@ public class TreasureHuntController {
         try {
             String inputPath = gui.getInputPath();
             String outputPath = gui.getOutputPath();
-            generateMapFromInput(inputPath);
+            BufferedReader reader = IOHelper.getInputReader(inputPath);
+            generateMapFromReader(reader);
             executeAdventurersMoves();
             writeResults(outputPath);
             gui.displaySuccessDialog();
-        } catch (InvalidFileFormatException | EmptyInputException e) {
+        } catch (IOException | InvalidLineException e) {
             gui.displayErrorDialog(e);
         }
     }
 
     /**
-     * Generate the map and all its Tiles from the input file
+     * Generate the map and all its Tiles from the input file Reader
      */
-    private void generateMapFromInput(String inputPath) {
-        try {
-            BufferedReader reader = IOHelper.getInputReader(inputPath);
-            //Read the first line and create the map
-            String firstLine = reader.readLine();
-            if (firstLine.charAt(0) != 'C') {
-                //Display error message if the file doesn't start with C because we expect the map first
-                //Could be a bad formatting or a bad encoding
-                //This part could be improved for more flexibility in file reading
-                throw new InvalidFileFormatException("Le fichier doit commencer par la carte. Veuillez vous assurez que la première ligne commence bien par C et que l'encodage est en UTF-8.");
-            }
+    protected void generateMapFromReader(BufferedReader reader) throws IOException, InvalidLineException {
+        //Read the first line and create the map
+        String firstLine = reader.readLine();
+        if (firstLine.charAt(0) != 'C') {
+            //Display error message if the file doesn't start with C because we expect the map first
+            //Could be a bad formatting or a bad encoding
+            //This part could be improved for more flexibility in file reading
+            throw new InvalidFileFormatException("Le fichier doit commencer par la carte. Veuillez vous assurez que la première ligne commence bien par C et que l'encodage est en UTF-8.");
+        }
 
-            //Split the line in parts
-            //Throws InvalidLineException if line not valid
-            //Generate Map from the parts
-            String[] firstLineParts = firstLine.split(" - ");
-            isLineValid(firstLineParts);
-            map = new Map(Integer.parseInt(firstLineParts[1]), Integer.parseInt(firstLineParts[2]));
+        //Split the line in parts
+        //Throws InvalidLineException if line not valid
+        //Generate Map from the parts
+        String[] firstLineParts = firstLine.split(" - ");
+        isLineValid(firstLineParts);
+        map = new Map(Integer.parseInt(firstLineParts[1]), Integer.parseInt(firstLineParts[2]));
 
-            //Continue by reading all the lines and creating the corresponding tiles
-            String line;
-            while ((line = reader.readLine()) != null) {
-                try {
-                    map.addTile(createTileFromLine(line));
-                } catch (TileUnavailableException e) {
-                    //If the tile is unavailable, show a prompt to the user indicating the line
-                    //But continue with the other lines
-                    gui.displayErrorDialog(e);
-                }
+        //Continue by reading all the lines and creating the corresponding tiles
+        String line;
+        while ((line = reader.readLine()) != null) {
+            try {
+                map.addTile(createTileFromLine(line));
+            } catch (TileUnavailableException e) {
+                //If the tile is unavailable, show a prompt to the user indicating the line
+                //But continue with the other lines
+                gui.displayErrorDialog(e);
             }
-        } catch (IOException | InvalidLineException e) {
-            gui.displayErrorDialog(e);
         }
     }
 
@@ -92,7 +87,7 @@ public class TreasureHuntController {
      * The adventurers are stored in the same order as they are read from the input file
      * So conflict will be handled the right way
      */
-    private void executeAdventurersMoves() {
+    protected void executeAdventurersMoves() {
         List<Adventurer> adventurers = map.getAllAdventurers();
 
         while (!adventurers.isEmpty()) {

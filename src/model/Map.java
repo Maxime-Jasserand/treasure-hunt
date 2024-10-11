@@ -24,13 +24,13 @@ public class Map {
         return tiles.stream().filter(t -> t.hasCoordinates(x, y)).findFirst();
     }
 
-    public List<Tile> getAllTiles(){
+    public List<Tile> getAllTiles() {
         return tiles;
     }
 
-    public Optional<Treasure> getTreasure(int x, int y){
+    public Optional<Treasure> getTreasure(int x, int y) {
         return tiles.stream().filter(t -> t.hasCoordinates(x, y) && t instanceof Treasure)
-                .map(t -> (Treasure)t).findFirst();
+                .map(t -> (Treasure) t).findFirst();
     }
 
     public List<Adventurer> getAllAdventurers() {
@@ -46,7 +46,15 @@ public class Map {
         }
     }
 
-    public String getOutputLine(){
+    public String getOutputLine() {
         return "M - " + x + " - " + y;
+    }
+
+    public int getX(){
+        return x;
+    }
+
+    public int getY(){
+        return y;
     }
 }
