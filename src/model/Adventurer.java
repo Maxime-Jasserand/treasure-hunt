@@ -2,7 +2,7 @@ package model;
 
 import model.enums.Orientation;
 
-import java.util.Optional;
+import java.util.HashMap;
 
 public class Adventurer extends Tile {
     private final String name;
@@ -19,46 +19,7 @@ public class Adventurer extends Tile {
     }
 
     /*-------------------------   MOVEMENT METHODS  -------------------------*/
-
-    /**
-     * A move will either be :
-     * - Turn, which is simple
-     * - Move forward which require to check if it's possible before moving and eventually picking up a treasure
-     *
-     * @param map is used to check where the adventurer will land
-     */
-    public void executeNextMove(Map map) {
-        char nextMove = moveList.charAt(0);
-        switch (nextMove) {
-            case 'A' -> {
-                // we check the next tile before moving
-                if (isNextTileCrossable(map)) {
-                    moveForward();
-                    pickupTreasureIfAny(map);
-                }
-            }
-            case 'G' -> turnLeft();
-            case 'D' -> turnRight();
-        }
-
-        //Remove the move that has been executed from the list
-        moveList = moveList.substring(1);
-    }
-
-    public void pickupTreasureIfAny(Map map) {
-        //Get an eventual treasure on the tile
-        Optional<Treasure> treasure = map.getTreasure(x, y);
-        if (treasure.isEmpty()) {
-            return;
-        }
-        //Pick it up if any
-        map.pickupTreasure(treasure.get());
-        //Increase adventurer treasure count
-        treasureCount++;
-    }
-
-    //The next tile is crossable if it's empty or crossable
-    public boolean isNextTileCrossable(Map map) {
+    public HashMap<String, Integer> getNextTileCoordinates(){
         int nextX = x;
         int nextY = y;
         switch (orientation) {
@@ -67,8 +28,10 @@ public class Adventurer extends Tile {
             case S -> nextY++;
             case W -> nextX--;
         }
-        Optional<Tile> nextTile = map.getTile(nextX, nextY);
-        return nextTile.isEmpty() || nextTile.get().isCrossable();
+        HashMap<String, Integer> coordinates = new HashMap<>();
+        coordinates.put("x", nextX);
+        coordinates.put("y", nextY);
+        return coordinates;
     }
 
     public void moveForward() {
@@ -80,7 +43,7 @@ public class Adventurer extends Tile {
         }
     }
 
-    private void turnLeft() {
+    public void turnLeft() {
         switch (orientation) {
             case N -> orientation = Orientation.W;
             case E -> orientation = Orientation.N;
@@ -89,7 +52,7 @@ public class Adventurer extends Tile {
         }
     }
 
-    private void turnRight() {
+    public void turnRight() {
         switch (orientation) {
             case N -> orientation = Orientation.E;
             case E -> orientation = Orientation.S;
@@ -99,20 +62,6 @@ public class Adventurer extends Tile {
     }
 
     /*-------------------------   UTILS  -------------------------*/
-    @Override
-    public boolean isCrossable() {
-        return false;
-    }
-
-    @Override
-    public String getOutputLine() {
-        return "A - " + name + " - " + x + " - " + y + " - " + orientation.toString() + " - " + treasureCount;
-    }
-
-    public String getMoveList() {
-        return moveList;
-    }
-
     public String getName(){
         return name;
     }
@@ -121,7 +70,33 @@ public class Adventurer extends Tile {
         return orientation;
     }
 
+    public String getMoveList() {
+        return moveList;
+    }
+
+    public char getNextMove(){
+        return moveList.charAt(0);
+    }
+
+    public void removeNextMove(){
+        moveList = moveList.substring(1);
+    }
+
     public int getTreasureCount(){
         return treasureCount;
+    }
+
+    public void increaseTreasureCount(){
+        treasureCount++;
+    }
+
+    @Override
+    public boolean isCrossable() {
+        return false;
+    }
+
+    @Override
+    public String getOutputLine() {
+        return "A - " + name + " - " + x + " - " + y + " - " + orientation.toString() + " - " + treasureCount;
     }
 }

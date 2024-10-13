@@ -2,6 +2,7 @@ package controller;
 
 import exceptions.InvalidFileFormatException;
 import exceptions.InvalidLineException;
+import exceptions.TileOutOfMapException;
 import exceptions.TileUnavailableException;
 import helpers.IOHelper;
 import model.*;
@@ -73,9 +74,13 @@ public class TreasureHuntController {
         String line;
         while ((line = reader.readLine()) != null) {
             try {
-                map.addTile(createTileFromLine(line));
-            } catch (TileUnavailableException e) {
-                //If the tile is unavailable, show a prompt to the user indicating the line
+                Tile newTile = createTileFromLine(line);
+                if (!map.isInsideBoundaries(newTile.getX(), newTile.getY())) {
+                    throw new TileOutOfMapException("La ligne suivante tente de créer un objet en dehors des limites de la carte : " + newTile.getOutputLine() + ". Elle sera ignorée.");
+                }
+                map.addTile(newTile);
+            } catch (TileUnavailableException | TileOutOfMapException e) {
+                //If the tile is unavailable or out of the map boundaries, show a prompt to the user indicating the line
                 //But continue with the other lines
                 gui.displayErrorDialog(e);
             }
@@ -95,9 +100,37 @@ public class TreasureHuntController {
             Iterator<Adventurer> iterator = adventurers.iterator();
             while (iterator.hasNext()) {
                 Adventurer a = iterator.next();
-                //Execute the next move and remove it from the move list
-                a.executeNextMove(map);
-                //If the move list is empty, we remove the adventurer from our list
+
+                //Execute the next move
+                char nextMove = a.getNextMove();
+                switch (nextMove) {
+                    case 'A' -> {
+                        // get the next tile
+                        HashMap<String, Integer> coordinates = a.getNextTileCoordinates();
+                        int x = coordinates.get("x");
+                        int y = coordinates.get("y");
+                        Optional<Tile> nextTile = map.getTile(x, y);
+                        // we check the next tile before moving
+                        if (map.isInsideBoundaries(x, y) && (nextTile.isEmpty() || nextTile.get().isCrossable())) {
+                            a.moveForward();
+                            //Get an eventual treasure on the tile
+                            Optional<Treasure> treasure = map.getTreasure(x, y);
+                            if (!treasure.isEmpty()) {
+                                //Pick it up if any
+                                map.pickupTreasure(treasure.get());
+                                //Increase adventurer treasure count
+                                a.increaseTreasureCount();
+
+                            }
+                        }
+                    }
+                    case 'G' -> a.turnLeft();
+                    case 'D' -> a.turnRight();
+                }
+                //Remove the move that has been executed from the list
+                a.removeNextMove();
+
+                //If the move list is empty, we remove the adventurer from our iterator
                 if (a.getMoveList().isEmpty()) {
                     iterator.remove();
                 }
@@ -182,7 +215,7 @@ public class TreasureHuntController {
         if (map.getTile(x, y).isEmpty()) {
             return true;
         }
-        throw new TileUnavailableException("Position indisponible au coordonnées x:" + x + ", y:" + y + ". Cette ligne sera ignorée.");
+        throw new TileUnavailableException("Position indisponible aux coordonnées x:" + x + ", y:" + y + ". Cette ligne sera ignorée.");
     }
 
 

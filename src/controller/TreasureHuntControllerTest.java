@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.List;
 
 import org.mockito.Mockito;
 
@@ -23,6 +24,7 @@ public class TreasureHuntControllerTest {
         controller = new TreasureHuntController();
     }
 
+    /*-------------------------   MAP GENERATION   -------------------------*/
     @Test
     public void shouldGenerateMapFromReader() throws IOException, InvalidLineException {
         BufferedReader mockReader = Mockito.mock(BufferedReader.class);
@@ -61,6 +63,22 @@ public class TreasureHuntControllerTest {
         assertEquals(((Adventurer) testedTiles[4]).getMoveList(), "AADADAGGA");
     }
 
+    @Test
+    public void shouldNotCreateTileOutOfMap() throws InvalidLineException, IOException {
+        BufferedReader mockReader = Mockito.mock(BufferedReader.class);
+        when(mockReader.readLine())
+                .thenReturn("C - 3 - 4")
+                .thenReturn("M - 10 - 0")
+                .thenReturn(null);
+
+        controller.generateMapFromReader(mockReader);
+
+        //The map should contain zero tile
+        List<Tile> createdTiles = controller.map.getAllTiles();
+        assertEquals(createdTiles.size(), 0);
+
+    }
+    /*-------------------------   ADVENTURERS MOVEMENTS   -------------------------*/
     @Test
     public void shouldExecuteAdventurersMoves() throws IOException, InvalidLineException {
         BufferedReader mockReader = Mockito.mock(BufferedReader.class);
@@ -107,7 +125,7 @@ public class TreasureHuntControllerTest {
     }
 
     @Test
-    public void adventurersShouldNotCrossEachOther()throws IOException, InvalidLineException {
+    public void adventurersShouldNotCrossEachOther() throws IOException, InvalidLineException {
         BufferedReader mockReader = Mockito.mock(BufferedReader.class);
         when(mockReader.readLine())
                 .thenReturn("C - 3 - 4")
@@ -132,7 +150,7 @@ public class TreasureHuntControllerTest {
     }
 
     @Test
-    public void shouldPickupATreasure()throws IOException, InvalidLineException {
+    public void shouldPickupATreasure() throws IOException, InvalidLineException {
         BufferedReader mockReader = Mockito.mock(BufferedReader.class);
         when(mockReader.readLine())
                 .thenReturn("C - 3 - 4")
@@ -152,8 +170,27 @@ public class TreasureHuntControllerTest {
         assertEquals(adventurer.getTreasureCount(), 1);
 
         //Also the treasure should still exist but with a reduced quantity
-        Treasure treasure = controller.map.getTreasure(1,1).get();
-        assertEquals(treasure.getQuantity(),1);
+        Treasure treasure = controller.map.getTreasure(1, 1).get();
+        assertEquals(treasure.getQuantity(), 1);
+    }
+
+    @Test
+    public void shouldNotMoveOutsideMap() throws IOException, InvalidLineException {
+        BufferedReader mockReader = Mockito.mock(BufferedReader.class);
+        when(mockReader.readLine())
+                .thenReturn("C - 3 - 4")
+                .thenReturn("A - Lara - 1 - 0 - N - AA")
+                .thenReturn("T - 1 - 1 - 2")
+                .thenReturn(null);
+
+        controller.generateMapFromReader(mockReader);
+        controller.executeAdventurersMoves();
+
+        Adventurer adventurer = controller.map.getAllAdventurers().getFirst();
+        //Expect the adventurer to have an empty move list
+        assertTrue(adventurer.getMoveList().isEmpty());
+        //It should stay on the same position
+        assertTrue(adventurer.hasCoordinates(1, 0));
     }
 
     /*-------------------------   EXCEPTION TESTING   -------------------------*/

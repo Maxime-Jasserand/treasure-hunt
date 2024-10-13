@@ -58,8 +58,12 @@ public class TreasureHuntGUI extends JFrame {
     }
 
     /*-------------------------   DIALOGS METHODS  -------------------------*/
+
+    /**
+     * Display a non-blocking error message
+     */
     public void displayErrorDialog(Exception error) {
-        JOptionPane.showMessageDialog(null, error.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+        new Thread(() -> JOptionPane.showMessageDialog(null, error.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE)).start();
     }
 
     public void displaySuccessDialog() {

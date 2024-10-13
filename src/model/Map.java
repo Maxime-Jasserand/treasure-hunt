@@ -16,6 +16,24 @@ public class Map {
         this.tiles = new ArrayList<>();
     }
 
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public List<Tile> getAllTiles() {
+        return tiles;
+    }
+
+    public List<Adventurer> getAllAdventurers() {
+        return tiles.stream().filter(t -> t instanceof Adventurer)
+                .map(t -> (Adventurer) t)
+                .collect(Collectors.toList());
+    }
+
     public void addTile(Tile tile) {
         tiles.add(tile);
     }
@@ -24,19 +42,9 @@ public class Map {
         return tiles.stream().filter(t -> t.hasCoordinates(x, y)).findFirst();
     }
 
-    public List<Tile> getAllTiles() {
-        return tiles;
-    }
-
     public Optional<Treasure> getTreasure(int x, int y) {
         return tiles.stream().filter(t -> t.hasCoordinates(x, y) && t instanceof Treasure)
                 .map(t -> (Treasure) t).findFirst();
-    }
-
-    public List<Adventurer> getAllAdventurers() {
-        return tiles.stream().filter(t -> t instanceof Adventurer)
-                .map(t -> (Adventurer) t)
-                .collect(Collectors.toList());
     }
 
     public void pickupTreasure(Treasure treasure) {
@@ -50,11 +58,7 @@ public class Map {
         return "M - " + x + " - " + y;
     }
 
-    public int getX(){
-        return x;
-    }
-
-    public int getY(){
-        return y;
+    public boolean isInsideBoundaries(int x, int y) {
+        return x <= this.x && y <= this.y && x >= 0 && y >= 0;
     }
 }
